@@ -45,19 +45,43 @@ class SATInstance(object):
                 instance.parse_and_add_clause(line)
         return instance
 
-    def literal_to_string(self, literal):
-        s = '~' if literal & 1 else ''
-        return s + self.variables[literal >> 1]
+    def formula_to_string(self, showlatex=False):
+        if showlatex:
+            joiner = " \\wedge "
+        else:
+            joiner = " "
 
-    def clause_to_string(self, clause):
-        return ' '.join(self.literal_to_string(l) for l in clause)
+        return joiner.join([self.clause_to_string(clause, showlatex) 
+                            for clause in self.clauses])
 
-    def assignment_to_string(self, assignment, brief=False, starting_with=''):
+    def literal_to_string(self, literal, showlatex=False):
+        if showlatex:
+            lit = self.variables[literal >> 1]
+            # this is kludgey - assumes one letter varnames!
+            latexlit = lit[0] + '_{' + lit[1:] + '}' 
+            return '\\overline{' + lit + '}' if literal & 1 else lit
+        else:
+            s = '~' if literal & 1 else ''
+            return s + self.variables[literal >> 1]
+
+    def clause_to_string(self, clause, showlatex=False):
+        if showlatex:
+            return "(" + " \\vee ".join([self.literal_to_string(literal, showlatex) for literal in clause]) + ")"
+        else:
+            return ' '.join(self.literal_to_string(l) for l in clause)
+
+    def assignment_to_string(self, assignment, brief=False, starting_with='', showlatex=False):
         literals = []
         for a, v in ((a, v) for a, v in zip(assignment, self.variables)
                      if v.startswith(starting_with)):
+            if showlatex:
+                v = v[0] + '_{' + v[1:] + '}'
+
             if a == 0 and not brief:
-                literals.append('~' + v)
+                if showlatex:
+                    literals.append('\\overline{' + v + '}')
+                else:
+                    literals.append('~' + v)
             elif a:
                 literals.append(v)
         return ' '.join(literals)

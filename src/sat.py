@@ -21,11 +21,14 @@ from solvers import iterative_sat
 __author__ = 'Sahand Saba'
 
 
-def solve(instance, alg, verbose=False):
+def solve(instance, alg, verbose=False, showlatex=False):
     """
     Returns a generator that generates all the satisfying assignments for a
     given SAT instance, using algorithm given by alg.
     """
+    if verbose:
+        print ("Solving: " + instance.formula_to_string(showlatex))
+
     n = len(instance.variables)
     watchlist = setup_watchlist(instance)
     if not watchlist:
@@ -40,15 +43,21 @@ def main():
     with args.input as file:
         instance = SATInstance.from_file(file)
 
-    assignments = solve(instance, args.algorithm, args.verbose)
+    assignments = solve(instance, args.algorithm, args.verbose, args.showlatex)
     count = 0
     for assignment in assignments:
         if args.verbose:
-            print('Found satisfying assignment #{}:'.format(count),
-                  file=stderr)
+            if args.all:
+                print('Found satisfying assignment #{}:'.format(count),
+                      file=stderr)
+            else:
+                print('Found satisfying assignment:'.format(count),
+                      file=stderr)
+
         print(instance.assignment_to_string(assignment,
                                             brief=args.brief,
-                                            starting_with=args.starting_with))
+                                            starting_with=args.starting_with,
+                                            showlatex=args.showlatex))
         count += 1
         if not args.all:
             break
@@ -62,6 +71,10 @@ def parse_args():
     parser.add_argument('-v',
                         '--verbose',
                         help='verbose output.',
+                        action='store_true')
+    parser.add_argument('-x',
+                        '--showlatex',
+                        help='latex output.',
                         action='store_true')
     parser.add_argument('-a',
                         '--all',
@@ -88,7 +101,6 @@ def parse_args():
                         type=FileType('r'),
                         default=stdin)
     return parser.parse_args()
-
 
 if __name__ == '__main__':
     main()

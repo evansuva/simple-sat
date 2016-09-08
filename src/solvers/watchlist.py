@@ -50,7 +50,7 @@ def update_watchlist(instance,
 
         if not found_alternative:
             if verbose:
-                dump_watchlist(instance, watchlist)
+                # dump_watchlist(instance, watchlist)
                 print('Current assignment: {}'.format(
                       instance.assignment_to_string(assignment)),
                       file=stderr)
